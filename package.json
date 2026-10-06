@@ -1,0 +1,33 @@
+{
+  "name": "c0ffe-tools",
+  "version": "0.1.0",
+  "description": "C0FFE Tools: AI development harness for Claude Code, Codex and OpenCode",
+  "type": "module",
+  "bin": {
+    "coff": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "chalk": "^5.4.1",
+    "inquirer": "^12.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "tsup": "^8.4.0",
+    "@types/node": "^22.15.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "PROPRIETARY",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
