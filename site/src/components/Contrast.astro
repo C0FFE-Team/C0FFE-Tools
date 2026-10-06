@@ -1,0 +1,116 @@
+---
+// Same request, two outcomes. Short chat transcripts carry the point; no paragraphs.
+---
+
+<section class="section" id="o-que-muda">
+  <div class="wrap">
+    <p class="eyebrow">O que muda</p>
+    <h2 class="h2">Mesmo pedido. Outro resultado.</h2>
+    <p class="lede">Sem método, a IA sai escrevendo. Com o C0FFE Tools ela entende, planeja, pergunta, testa e só então entrega.</p>
+
+    <div class="pair">
+      <article class="chat before" aria-label="Exemplo sem C0FFE Tools">
+        <header>Sem C0FFE Tools</header>
+        <p class="me">faz a tela de login</p>
+        <p class="ai">Criei 14 arquivos e mudei o roteamento. Pronto!</p>
+        <ul class="facts">
+          <li class="bad">não leu o código que já existia</li>
+          <li class="bad">não mostrou o plano</li>
+          <li class="bad">não rodou nenhum teste</li>
+        </ul>
+      </article>
+
+      <article class="chat after" aria-label="Exemplo com C0FFE Tools">
+        <header>Com C0FFE Tools</header>
+        <p class="me"><code><span class="pfx">/</span>coff-do "tela de login"</code></p>
+        <p class="ai">
+          Li o projeto. Já existe um <code>Button</code> e um <code>useAuth</code>.<br />
+          <b>Plano:</b> 1 página, 1 formulário, 2 testes. Posso seguir?
+        </p>
+        <p class="me">pode</p>
+        <p class="ai">
+          <span class="ok">✓</span> typecheck <span class="ok">✓</span> lint <span class="ok">✓</span> 2 testes<br />
+          PR aberto: <code>feat(auth): add login page</code>
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .chat {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    background: var(--bg-elev);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .after {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  }
+  header {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--faint);
+    margin-bottom: 4px;
+  }
+  .after header {
+    color: var(--accent);
+  }
+  .chat p {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    max-width: 88%;
+    font-size: 15px;
+  }
+  .me {
+    align-self: flex-end;
+    background: var(--fg);
+    color: var(--bg);
+    border-bottom-right-radius: 4px;
+  }
+  .me code {
+    color: inherit;
+  }
+  .me .pfx {
+    color: inherit;
+  }
+  .ai {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 4px;
+  }
+  code {
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .ok {
+    color: var(--accent);
+  }
+  .facts {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .bad::before {
+    content: "✗ ";
+    color: var(--warn);
+  }
+  @media (max-width: 760px) {
+    .pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

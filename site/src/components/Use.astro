@@ -1,0 +1,206 @@
+---
+import { PIPELINE } from "../data";
+---
+
+<section class="section" id="usar">
+  <div class="wrap">
+    <p class="eyebrow">Usar</p>
+    <h2 class="h2">Duas camadas. Você escolhe quando usar cada uma.</h2>
+    <p class="lede">O básico funciona em qualquer pasta. O pipeline completo liga em cada projeto com <code>coff init</code>.</p>
+
+    <div class="layers">
+      <article class="layer">
+        <p class="tag">Global · em qualquer pasta</p>
+        <h3>Ajuda do dia a dia</h3>
+        <ul>
+          <li><code><span class="pfx">/</span>coff-research</code> pesquisa e resume</li>
+          <li><code><span class="pfx">/</span>coff-validate</code> testa e corrige</li>
+          <li><code><span class="pfx">/</span>coff-create-pr</code> abre o PR</li>
+          <li>regras: português, segurança, sem commit sem pedir</li>
+        </ul>
+        <p class="when">Vem com <code>coff install</code></p>
+      </article>
+
+      <div class="plus" aria-hidden="true">+</div>
+
+      <article class="layer project">
+        <p class="tag">Projeto · depois do coff init</p>
+        <h3>Pipeline completo</h3>
+        <pre class="tree" aria-label="Pastas criadas no projeto"><span>meu-app/</span>
+<span>├─ .harness/</span>     <i>memória: plano, features, decisões</i>
+<span data-only-ai="claude">├─ .claude/</span><span data-only-ai="codex">├─ .codex/ .agents/</span><span data-only-ai="opencode free">├─ .opencode/</span>   <i>skills e agents do pipeline</i>
+<span>└─ AGENTS.md</span>     <i>contexto do projeto para a IA</i></pre>
+        <p class="when">Os arquivos da IA ficam fora do git. Só a memória entra.</p>
+      </article>
+    </div>
+
+    <h3 class="sub-h">O pipeline, passo a passo</h3>
+    <p class="sub-lede">
+      Com <code><span class="pfx">/</span>coff-do "o que fazer"</code> ou <code><span class="pfx">/</span>coff-solve &lt;id&gt;</code>, cada etapa é um
+      agent especialista. Você só entra em um momento:
+    </p>
+    <ol class="flow">
+      {
+        PIPELINE.map((p) => (
+          <li class:list={[{ gate: p.gate }]}>
+            <b>{p.agent}</b>
+            <span>{p.does}</span>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="hint">Quer só o plano, sem código? Adicione <code>--plan</code>. Projeto com Figma? Rode antes <code><span class="pfx">/</span>coff-styleguide</code>.</p>
+  </div>
+</section>
+
+<style>
+  code {
+    font-size: 0.9em;
+    color: var(--fg);
+  }
+  .layers {
+    display: grid;
+    grid-template-columns: 1fr auto 1.25fr;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 72px;
+  }
+  .layer {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+    background: var(--bg-elev);
+    display: flex;
+    flex-direction: column;
+  }
+  .layer.project {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  }
+  .tag {
+    margin: 0 0 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--faint);
+  }
+  .project .tag {
+    color: var(--accent);
+  }
+  h3 {
+    margin: 0 0 14px;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .when {
+    margin: auto 0 0;
+    padding-top: 16px;
+    font-size: 13px;
+    color: var(--faint);
+  }
+  .plus {
+    align-self: center;
+    font-family: var(--mono);
+    font-size: 22px;
+    color: var(--faint);
+  }
+  .tree {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+    color: var(--fg);
+  }
+  .tree i {
+    font-style: normal;
+    color: var(--faint);
+  }
+  .sub-h {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .sub-lede {
+    margin: 0 0 28px;
+    color: var(--muted);
+    max-width: 620px;
+  }
+  .flow {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    counter-reset: f;
+  }
+  .flow li {
+    counter-increment: f;
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    background: var(--bg-elev);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+  }
+  .flow li::before {
+    content: counter(f);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--faint);
+  }
+  .flow li:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translate(50%, -50%);
+    font-size: 13px;
+    color: var(--faint);
+    z-index: 1;
+  }
+  .flow b {
+    font-weight: 600;
+  }
+  .flow span {
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .flow .gate {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+  }
+  .flow .gate b {
+    color: var(--accent);
+  }
+  .hint {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0;
+  }
+  @media (max-width: 900px) {
+    .layers {
+      grid-template-columns: 1fr;
+    }
+    .plus {
+      justify-self: center;
+    }
+    .flow {
+      grid-template-columns: 1fr 1fr;
+    }
+    .flow li::after {
+      display: none;
+    }
+  }
+</style>

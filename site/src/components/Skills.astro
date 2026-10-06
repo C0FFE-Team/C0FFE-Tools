@@ -1,0 +1,85 @@
+---
+import { SKILLS } from "../data";
+
+const groups = [
+  { where: "global", title: "Em qualquer pasta" },
+  { where: "project", title: "Em projetos (depois do coff init)" },
+] as const;
+---
+
+<section class="section" id="skills">
+  <div class="wrap">
+    <p class="eyebrow">Skills</p>
+    <h2 class="h2">Comandos que você digita dentro da IA.</h2>
+    <p class="lede">
+      No Claude Code e no OpenCode começam com <code>/</code>. No Codex, com <code>$</code>. Os exemplos abaixo já seguem a IA que você escolheu.
+    </p>
+
+    {
+      groups.map((g) => (
+        <div class="group">
+          <h3>{g.title}</h3>
+          <div class="grid">
+            {SKILLS.filter((s) => s.where === g.where).map((s) => (
+              <article class="card">
+                <code class="cmd">
+                  <span class="pfx">/</span>
+                  {s.name}
+                  {s.args && <span class="args"> {s.args}</span>}
+                </code>
+                <p>{s.does}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .lede code {
+    color: var(--accent);
+  }
+  .group + .group {
+    margin-top: 40px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 550;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: var(--bg-elev);
+    transition: border-color 0.15s;
+  }
+  .card:hover {
+    border-color: var(--line-strong);
+  }
+  .cmd {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    overflow-wrap: anywhere;
+  }
+  .args {
+    color: var(--faint);
+    font-weight: 400;
+  }
+  .card p {
+    margin: 0;
+    font-size: 14.5px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+</style>

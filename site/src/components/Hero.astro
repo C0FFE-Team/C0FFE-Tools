@@ -1,0 +1,255 @@
+---
+import { REPO } from "../data";
+
+// What `coff install` prints, trimmed: the first thing a new user sees it do.
+const out = [
+  { t: "cmd", s: "coff install" },
+  { t: "ok", s: "Claude Code   3 skills · 2 agents · regras" },
+  { t: "ok", s: "Codex         3 skills · 2 agents · regras" },
+  { t: "ok", s: "OpenCode      3 skills · 2 agents · 3 comandos" },
+  { t: "ok", s: "Hook de contexto" },
+  { t: "dim", s: "Pronto. Agora: cd seu-projeto e coff init" },
+];
+---
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="copy">
+      <p class="eyebrow">macOS · Windows · Linux</p>
+      <h1>
+        Sua IA de código,<br />
+        <span class="hl">com método.</span>
+      </h1>
+      <p class="sub">
+        Skills, agents e regras prontos para <strong>Claude Code</strong>, <strong>Codex</strong> e{" "}
+        <strong>OpenCode</strong>. Um comando instala. A partir daí, pedido vira plano, código, teste e PR.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="#instalar">Instalar agora</a>
+        <a class="btn" href="#usar">Ver como funciona</a>
+      </div>
+      <p class="free-note">
+        Começando do zero e sem pagar nada?{" "}
+        <button type="button" class="link" data-set-ai="free" data-jump="instalar">Use o modo fácil grátis</button>
+      </p>
+    </div>
+
+    <div class="term" role="img" aria-label="Terminal mostrando coff install configurando Claude Code, Codex e OpenCode">
+      <div class="bar"><span></span><span></span><span></span><em>Terminal</em></div>
+      <div class="body">
+        {
+          out.map((l, i) => (
+            <div class={`l ${l.t}`} style={`--i:${i}`}>
+              {l.t === "cmd" && <span class="p">$ </span>}
+              {l.t === "ok" && <span class="tick">✓ </span>}
+              {l.s}
+            </div>
+          ))
+        }
+        <span class="cursor" style={`--i:${out.length}`}></span>
+      </div>
+    </div>
+  </div>
+  <p class="wrap repo">
+    <a href={REPO} target="_blank" rel="noopener">C0FFE-Team/C0FFE-Tools</a>
+  </p>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    padding: 88px 0 56px;
+  }
+  /* dot grid behind the hero, fading out downwards */
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(var(--line-strong) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(to bottom, #000 40%, transparent);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 56px;
+    align-items: center;
+  }
+  h1 {
+    font-size: clamp(40px, 6vw, 64px);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    font-weight: 650;
+    margin: 0 0 20px;
+  }
+  .hl {
+    background: linear-gradient(90deg, var(--fg), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 0 28px;
+  }
+  .sub strong {
+    color: var(--fg);
+    font-weight: 550;
+  }
+  .cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 20px;
+    border-radius: 9px;
+    border: 1px solid var(--line-strong);
+    text-decoration: none;
+    font-weight: 550;
+    font-size: 15px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn:hover {
+    border-color: var(--muted);
+  }
+  .btn.primary {
+    background: var(--fg);
+    color: var(--bg);
+    border-color: var(--fg);
+  }
+  .btn.primary:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .free-note {
+    margin: 22px 0 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .link {
+    font: inherit;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .term {
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--bg-code);
+    box-shadow: 0 30px 80px -30px color-mix(in srgb, var(--coffee) 22%, transparent);
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: 13.5px;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .bar span {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--line-strong);
+  }
+  .bar em {
+    font-style: normal;
+    color: var(--faint);
+    font-size: 12px;
+    margin-left: 8px;
+  }
+  .body {
+    padding: 18px 18px 22px;
+    line-height: 1.9;
+    min-height: 236px;
+  }
+  .l {
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0;
+    animation: in 0.35s ease forwards;
+    animation-delay: calc(0.25s + var(--i) * 0.42s);
+  }
+  .p,
+  .dim {
+    color: var(--faint);
+  }
+  .cmd {
+    color: var(--fg);
+  }
+  .ok {
+    color: var(--muted);
+  }
+  .tick {
+    color: var(--accent);
+  }
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
+    background: var(--accent);
+    vertical-align: -3px;
+    opacity: 0;
+    animation: in 0.2s forwards, blink 1s step-end infinite;
+    animation-delay: calc(0.25s + var(--i) * 0.42s), calc(0.45s + var(--i) * 0.42s);
+  }
+  @keyframes in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .l,
+    .cursor {
+      opacity: 1;
+    }
+  }
+  .repo {
+    margin-top: 40px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .repo a {
+    color: var(--faint);
+    text-decoration: none;
+  }
+  .repo a:hover {
+    color: var(--fg);
+  }
+  @media (max-width: 860px) {
+    .hero {
+      padding-top: 56px;
+    }
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+  }
+</style>

@@ -1,0 +1,122 @@
+---
+// The "easy mode": OpenCode free plan for beginners. One card, four promises, one action.
+const perks = [
+  { k: "R$ 0", t: "Modelos grátis do OpenCode Zen, escolhidos sozinhos. Se um sair do ar, o próximo entra." },
+  { k: "Pergunta antes", t: "Pede sua permissão antes de editar arquivos ou rodar comandos." },
+  { k: "Explica", t: "Diz o que vai fazer, explica os termos e ensina a testar o resultado." },
+  { k: "Economiza", t: "Lê só o necessário e evita gastar o limite do plano grátis." },
+];
+---
+
+<section class="section" id="modo-facil">
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <p class="eyebrow"><b>Modo fácil</b> · OpenCode grátis</p>
+        <h2 class="h2">Nunca usou IA para programar? Comece aqui.</h2>
+        <p class="lede">Um perfil pensado para quem está começando e não quer pagar nada. Instala com uma opção a mais:</p>
+        <div class="cmd">
+          <code data-only-os="mac linux">./install.sh --profile free</code>
+          <code data-only-os="windows">.\install.cmd --profile free</code>
+        </div>
+        <button type="button" class="go" data-set-ai="free" data-jump="instalar">Ver o passo a passo do modo fácil</button>
+      </div>
+      <ul class="perks">
+        {
+          perks.map((p) => (
+            <li>
+              <b>{p.k}</b>
+              <span>{p.t}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="warn">Modelos grátis podem guardar as conversas. Nunca cole senhas, tokens ou chaves.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .card {
+    border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--line));
+    border-radius: 18px;
+    padding: 40px;
+    background:
+      radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--coffee) 10%, transparent), transparent 55%),
+      var(--bg-elev);
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 40px;
+  }
+  .lede {
+    margin-bottom: 16px;
+  }
+  .cmd code {
+    display: inline-block;
+    font-size: 14px;
+    padding: 10px 14px;
+    border-radius: 9px;
+    border: 1px solid var(--line-strong);
+    background: var(--bg-code);
+  }
+  .go {
+    display: block;
+    margin-top: 18px;
+    font: 550 15px var(--sans);
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: 0;
+    border-radius: 9px;
+    padding: 12px 18px;
+    cursor: pointer;
+  }
+  .go:hover {
+    filter: brightness(1.05);
+  }
+  .perks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+    align-content: center;
+  }
+  .perks li {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 14px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .perks li:last-child {
+    border-bottom: 0;
+  }
+  .perks b {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .perks span {
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .warn {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--warn);
+  }
+  @media (max-width: 860px) {
+    .card {
+      grid-template-columns: 1fr;
+      padding: 24px;
+      gap: 24px;
+    }
+    .perks li {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>

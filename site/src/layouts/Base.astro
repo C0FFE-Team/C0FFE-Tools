@@ -1,0 +1,245 @@
+---
+import "../styles/global.css";
+import { REPO } from "../data";
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR" data-ai="claude" data-os="mac">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav-row">
+        <a class="brand" href="#topo" aria-label="C0FFE Tools, início">
+          <span class="swatch" aria-hidden="true"></span>
+          <span class="brand-name">C0FFE Tools</span>
+        </a>
+        <nav class="links" aria-label="Seções">
+          <a href="#instalar">Instalar</a>
+          <a href="#usar">Usar</a>
+          <a href="#skills">Skills</a>
+          <a href="#comandos">Comandos</a>
+          <a href="#duvidas">Dúvidas</a>
+        </nav>
+        <a class="gh" href={REPO} target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </header>
+
+    <main id="topo">
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer-row">
+        <span><span class="swatch small" aria-hidden="true"></span> C0FFE Tools · feito pelo C0FFE Team</span>
+        <a href={REPO} target="_blank" rel="noopener">github.com/C0FFE-Team/C0FFE-Tools</a>
+      </div>
+    </footer>
+
+    <script>
+      type Ai = "claude" | "codex" | "opencode" | "free";
+      type Os = "mac" | "windows" | "linux";
+      const AIS: Ai[] = ["claude", "codex", "opencode", "free"];
+      const OSES: Os[] = ["mac", "windows", "linux"];
+      const CLI: Record<Ai, string> = { claude: "claude", codex: "codex", opencode: "opencode", free: "opencode" };
+
+      function detectOs(): Os {
+        const ua = navigator.userAgent.toLowerCase();
+        if (ua.includes("win")) return "windows";
+        if (ua.includes("mac") || ua.includes("iphone") || ua.includes("ipad")) return "mac";
+        return "linux";
+      }
+
+      const read = (key: string): string | null => {
+        try {
+          return localStorage.getItem(key);
+        } catch {
+          return null;
+        }
+      };
+      const write = (key: string, value: string) => {
+        try {
+          localStorage.setItem(key, value);
+        } catch {
+          // storage blocked: the URL still carries the choice
+        }
+      };
+
+      const params = new URLSearchParams(location.search);
+      const pick = <T extends string>(value: string | null, list: T[]): T | undefined =>
+        list.includes(value as T) ? (value as T) : undefined;
+
+      let ai: Ai = pick(params.get("ia"), AIS) ?? pick(read("coff-ia"), AIS) ?? "claude";
+      let os: Os = pick(params.get("so"), OSES) ?? pick(read("coff-so"), OSES) ?? detectOs();
+
+      function apply(updateUrl: boolean) {
+        const root = document.documentElement;
+        root.dataset.ai = ai;
+        root.dataset.os = os;
+        // an element shows only if it matches every filter it declares
+        document.querySelectorAll<HTMLElement>("[data-only-ai], [data-only-os]").forEach((el) => {
+          const okAi = !el.dataset.onlyAi || el.dataset.onlyAi.split(" ").includes(ai);
+          const okOs = !el.dataset.onlyOs || el.dataset.onlyOs.split(" ").includes(os);
+          el.hidden = !(okAi && okOs);
+        });
+        document.querySelectorAll<HTMLElement>(".pfx").forEach((el) => (el.textContent = ai === "codex" ? "$" : "/"));
+        document.querySelectorAll<HTMLElement>("[data-cli]").forEach((el) => (el.textContent = CLI[ai]));
+        document.querySelectorAll<HTMLButtonElement>("[data-set-ai]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.setAi === ai))
+        );
+        document.querySelectorAll<HTMLButtonElement>("[data-set-os]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.setOs === os))
+        );
+        if (updateUrl) {
+          const url = new URL(location.href);
+          url.searchParams.set("ia", ai);
+          url.searchParams.set("so", os);
+          history.replaceState(null, "", url);
+        }
+      }
+
+      document.addEventListener("click", async (event) => {
+        const target = event.target as HTMLElement;
+        const setAi = target.closest<HTMLElement>("[data-set-ai]");
+        const setOs = target.closest<HTMLElement>("[data-set-os]");
+        const copy = target.closest<HTMLButtonElement>("[data-copy]");
+        const share = target.closest<HTMLButtonElement>("[data-share]");
+
+        if (setAi) {
+          ai = setAi.dataset.setAi as Ai;
+          write("coff-ia", ai);
+          apply(true);
+          if (setAi.dataset.jump) document.getElementById(setAi.dataset.jump)?.scrollIntoView();
+        }
+        if (setOs) {
+          os = setOs.dataset.setOs as Os;
+          write("coff-so", os);
+          apply(true);
+        }
+        if (copy || share) {
+          const button = (copy ?? share)!;
+          const text = copy
+            ? button.closest(".code")?.querySelector("code")?.innerText.trim() ?? ""
+            : location.href;
+          try {
+            await navigator.clipboard.writeText(text);
+            const label = button.textContent;
+            button.textContent = "Copiado";
+            setTimeout(() => (button.textContent = label), 1400);
+          } catch {
+            button.textContent = "Selecione e copie";
+          }
+        }
+      });
+
+      apply(params.has("ia") || params.has("so"));
+    </script>
+
+    <style>
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: color-mix(in srgb, var(--bg) 82%, transparent);
+        backdrop-filter: saturate(180%) blur(12px);
+        border-bottom: 1px solid var(--line);
+      }
+      .nav-row {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        height: 60px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .brand-name {
+        /* mono: slashed zero, so C0FFE reads as the hex it is */
+        font-family: var(--mono);
+        font-size: 15px;
+        letter-spacing: -0.01em;
+      }
+      .swatch {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border-radius: 5px;
+        background: var(--coffee);
+        box-shadow: 0 0 0 1px var(--line-strong);
+        vertical-align: -3px;
+      }
+      .swatch.small {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        vertical-align: -1px;
+        margin-right: 6px;
+      }
+      .links {
+        display: flex;
+        gap: 20px;
+        margin-left: auto;
+        font-size: 14px;
+      }
+      .links a,
+      .gh {
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .links a:hover,
+      .gh:hover {
+        color: var(--fg);
+      }
+      .gh {
+        font-size: 14px;
+        border: 1px solid var(--line-strong);
+        padding: 6px 12px;
+        border-radius: 8px;
+      }
+      @media (max-width: 760px) {
+        .links {
+          display: none;
+        }
+        .gh {
+          margin-left: auto;
+        }
+      }
+      .footer {
+        border-top: 1px solid var(--line);
+        padding: 32px 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .footer-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .footer a {
+        color: var(--muted);
+      }
+    </style>
+  </body>
+</html>

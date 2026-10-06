@@ -1,0 +1,280 @@
+---
+import Code from "./Code.astro";
+import { AIS, OSES, STEPS } from "../data";
+
+// `text` in notes becomes <code>
+const parts = (text: string) => text.split("`").map((t, i) => ({ code: i % 2 === 1, t }));
+
+const only = (v: { ai?: string[]; os?: string[] }) => ({
+  "data-only-ai": v.ai?.join(" "),
+  "data-only-os": v.os?.join(" "),
+});
+---
+
+<section class="section" id="instalar">
+  <div class="wrap">
+    <p class="eyebrow">Instalar</p>
+    <h2 class="h2">Escolha sua IA e seu sistema.</h2>
+    <p class="lede">Os passos abaixo mudam com a escolha. Copie e cole um por vez.</p>
+
+    <div class="picker" role="group" aria-label="Escolha de IA e sistema">
+      <div class="row">
+        <span class="label">IA</span>
+        <div class="seg">
+          {
+            AIS.map((a) => (
+              <button type="button" data-set-ai={a.id} aria-pressed="false" class:list={[{ free: a.id === "free" }]}>
+                <span class="name">{a.label}</span>
+                <span class="hint">{a.hint}</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+      <div class="row">
+        <span class="label">Sistema</span>
+        <div class="seg os">
+          {
+            OSES.map((o) => (
+              <button type="button" data-set-os={o.id} aria-pressed="false">
+                <span class="name">{o.label}</span>
+                <span class="hint">{o.shell}</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+      <div class="share">
+        <span>Vai mandar para alguém? O link já leva essa escolha.</span>
+        <button type="button" data-share>Copiar link</button>
+      </div>
+    </div>
+
+    <ol class="steps">
+      {
+        STEPS.map((step) => (
+          <li class="step">
+            <h3>{step.title}</h3>
+            <p class="why">{parts(step.why).map((p) => (p.code ? <code>{p.t}</code> : p.t))}</p>
+            {step.variants.map((v) => (
+              <div class="variant" {...only(v)}>
+                {v.lines.length > 0 && <Code lines={v.lines} />}
+                {v.note && <p class="note">{parts(v.note).map((p) => (p.code ? <code>{p.t}</code> : p.t))}</p>}
+              </div>
+            ))}
+          </li>
+        ))
+      }
+      <li class="step last">
+        <h3>Use</h3>
+        <p class="why">Abra a IA dentro da pasta do projeto e peça algo com o pipeline:</p>
+        <div class="variant">
+          <div class="session">
+            <span class="dim">$</span> <span data-cli>claude</span><br />
+            <span class="dim">&gt;</span> <span class="pfx">/</span>coff-do "adicionar busca na lista de produtos"
+          </div>
+          <p class="note">Ele mostra um plano e espera você aprovar antes de escrever código. Veja mais em <a href="#usar">Usar</a>.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<style>
+  .picker {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg-elev);
+    padding: 20px;
+    display: grid;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--faint);
+  }
+  .seg {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .seg.os {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .seg button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+    color: var(--fg);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .seg button:hover {
+    border-color: var(--muted);
+  }
+  .seg button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 9%, var(--bg));
+  }
+  .name {
+    font-weight: 550;
+    font-size: 15px;
+  }
+  .hint {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--faint);
+  }
+  .free .hint {
+    color: var(--accent);
+  }
+  .share {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line-strong);
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .share button {
+    font: 500 13px var(--sans);
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  .share button:hover {
+    border-color: var(--muted);
+  }
+
+  /* the steps are a real sequence: the numbered rail encodes the order */
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: step;
+  }
+  .step {
+    position: relative;
+    counter-increment: step;
+    padding: 0 0 40px 56px;
+  }
+  .step::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .step::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    top: 36px;
+    bottom: 4px;
+    width: 1px;
+    background: var(--line);
+  }
+  .step.last::before {
+    content: "✓";
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .step.last::after {
+    display: none;
+  }
+  h3 {
+    margin: 2px 0 4px;
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+  .why {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .variant {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+    max-width: 680px;
+  }
+  .note {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+    padding-left: 12px;
+    border-left: 2px solid var(--line-strong);
+  }
+  .why code,
+  .note code {
+    font-size: 0.9em;
+    color: var(--fg);
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+  .session {
+    font-family: var(--mono);
+    font-size: 14px;
+    border: 1px solid var(--line);
+    background: var(--bg-code);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    line-height: 1.8;
+  }
+  .dim {
+    color: var(--faint);
+  }
+  @media (max-width: 760px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .seg {
+      grid-template-columns: 1fr 1fr;
+    }
+    .seg.os {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .seg.os .hint {
+      display: none;
+    }
+    .step {
+      padding-left: 44px;
+    }
+  }
+</style>

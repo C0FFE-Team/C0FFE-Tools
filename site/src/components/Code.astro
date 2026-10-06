@@ -1,0 +1,64 @@
+---
+// A copyable command block. The prompt glyph follows the chosen OS (CSS on html[data-os]).
+interface Props {
+  lines: string[];
+}
+const { lines } = Astro.props;
+---
+
+<div class="code">
+  <pre><code>{lines.map((l) => <span class="line">{l}</span>)}</code></pre>
+  <button type="button" class="copy" data-copy>Copiar</button>
+</div>
+
+<style>
+  .code {
+    position: relative;
+    min-width: 0; /* let long commands scroll inside instead of widening the page */
+    border: 1px solid var(--line);
+    background: var(--bg-code);
+    border-radius: var(--radius);
+  }
+  pre {
+    margin: 0;
+    padding: 14px 84px 14px 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  code {
+    display: flex;
+    flex-direction: column;
+  }
+  .line {
+    white-space: pre;
+  }
+  .line::before {
+    content: "$ ";
+    color: var(--faint);
+    user-select: none;
+  }
+  :global(html[data-os="mac"]) .line::before {
+    content: "% ";
+  }
+  :global(html[data-os="windows"]) .line::before {
+    content: "PS> ";
+  }
+  .copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font: 500 12px var(--sans);
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .copy:hover {
+    color: var(--fg);
+    border-color: var(--muted);
+  }
+</style>

@@ -1,0 +1,111 @@
+---
+// Each answer says what to do, not why things went wrong.
+---
+
+<section class="section" id="duvidas">
+  <div class="wrap narrow">
+    <p class="eyebrow">Dúvidas</p>
+    <h2 class="h2">Deu algo errado?</h2>
+
+    <details>
+      <summary>Preciso pagar alguma coisa?</summary>
+      <p>
+        O C0FFE Tools é de graça. A IA depende dela: o <b>Claude Code</b> pede plano Pro ou Max, o <b>Codex</b> usa sua conta do
+        ChatGPT e o <b>OpenCode grátis</b> não custa nada.
+      </p>
+    </details>
+
+    <details>
+      <summary>O terminal diz que <code>coff</code> não existe</summary>
+      <p>Feche e abra o terminal. Se continuar, rode o instalador de novo e leia o aviso sobre o PATH no final.</p>
+    </details>
+
+    <details>
+      <summary>Apareceu "rate limit", "429" ou "quota"</summary>
+      <p>É o limite de uso do plano. Espere alguns minutos. No OpenCode, dá para trocar de modelo com <code>/models</code>.</p>
+    </details>
+
+    <details>
+      <summary>O <code>coff doctor</code> diz "modelo indisponível"</summary>
+      <p>O modelo grátis saiu do ar. Troque com <code>/models</code> no OpenCode, ou apague <code>model</code> do <code>opencode.json</code> e rode <code>coff install</code>.</p>
+    </details>
+
+    <details>
+      <summary>Como atualizo?</summary>
+      <p>Na pasta do C0FFE Tools:</p>
+      <pre><code>git pull</code></pre>
+      <p>Depois rode o instalador de novo. Seu perfil fica lembrado.</p>
+    </details>
+
+    <details>
+      <summary>Como desfaço tudo?</summary>
+      <p><code>coff uninstall</code> remove o que o coff instalou. Se você usou <code>coff reset</code>, <code>coff restore</code> volta a configuração antiga.</p>
+    </details>
+
+    <details>
+      <summary>Uso OpenCode e Claude Code juntos e as skills aparecem duplicadas</summary>
+      <p>O OpenCode também lê as skills do Claude. Desligue isso uma vez:</p>
+      <pre data-only-os="mac"><code>echo 'export OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1' &gt;&gt; ~/.zshrc</code></pre>
+      <pre data-only-os="linux"><code>echo 'export OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1' &gt;&gt; ~/.bashrc</code></pre>
+      <pre data-only-os="windows"><code>setx OPENCODE_DISABLE_CLAUDE_CODE_SKILLS 1</code></pre>
+    </details>
+  </div>
+</section>
+
+<style>
+  .narrow {
+    max-width: 760px;
+  }
+  .h2 {
+    margin-bottom: 28px;
+  }
+  details {
+    border-bottom: 1px solid var(--line);
+  }
+  details:first-of-type {
+    border-top: 1px solid var(--line);
+  }
+  summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 18px 32px 18px 0;
+    font-weight: 550;
+    position: relative;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary::after {
+    content: "+";
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    color: var(--faint);
+    transition: transform 0.2s;
+  }
+  details[open] summary::after {
+    transform: translateY(-50%) rotate(45deg);
+  }
+  details p {
+    margin: 0 0 14px;
+    color: var(--muted);
+  }
+  details p b {
+    color: var(--fg);
+    font-weight: 550;
+  }
+  code {
+    font-size: 0.88em;
+  }
+  pre {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-code);
+    overflow-x: auto;
+    font-size: 13.5px;
+  }
+</style>

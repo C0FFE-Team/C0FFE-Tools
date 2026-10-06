@@ -1,0 +1,75 @@
+---
+import { CLI } from "../data";
+---
+
+<section class="section" id="comandos">
+  <div class="wrap">
+    <p class="eyebrow">Comandos</p>
+    <h2 class="h2">No terminal, fora da IA.</h2>
+    <p class="lede">O <code>coff</code> instala, confere e organiza. Os mais usados são os três primeiros.</p>
+    <dl class="sheet">
+      {
+        CLI.map((c, i) => (
+          <div class:list={["row", { top: i < 3 }]}>
+            <dt>
+              <code>{c.cmd}</code>
+            </dt>
+            <dd>{c.does}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  .lede code {
+    color: var(--fg);
+  }
+  .sheet {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(150px, 0.9fr) 1fr;
+    gap: 12px;
+    align-items: baseline;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-elev);
+  }
+  .row:nth-child(odd) {
+    border-right: 1px solid var(--line);
+  }
+  .row.top code {
+    color: var(--accent);
+  }
+  dt,
+  dd {
+    margin: 0;
+  }
+  code {
+    font-size: 14px;
+  }
+  dd {
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+  @media (max-width: 760px) {
+    .sheet {
+      grid-template-columns: 1fr;
+    }
+    .row:nth-child(odd) {
+      border-right: 0;
+    }
+    .row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>

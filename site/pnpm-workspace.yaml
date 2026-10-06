@@ -1,0 +1,7 @@
+# Own workspace root, so the site's dependencies stay out of the CLI install.
+allowBuilds:
+  esbuild: true
+  sharp: true
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
