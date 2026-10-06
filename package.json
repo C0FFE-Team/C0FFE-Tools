@@ -24,10 +24,5 @@
   "engines": {
     "node": ">=18"
   },
-  "license": "PROPRIETARY",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  }
+  "license": "PROPRIETARY"
 }

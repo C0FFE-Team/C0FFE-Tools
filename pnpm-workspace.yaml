@@ -1,0 +1,6 @@
+# Allow esbuild (used by tsup) to run its install script.
+# allowBuilds: pnpm 11+; onlyBuiltDependencies: pnpm 10. pnpm 9 runs build scripts by default.
+allowBuilds:
+  esbuild: true
+onlyBuiltDependencies:
+  - esbuild
