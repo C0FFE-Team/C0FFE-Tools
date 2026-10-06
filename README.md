@@ -8,11 +8,33 @@ PRD (Notion/arquivo) -> Design (Figma) -> Tasks (Linear/Jira) -> Implementação
 
 ## Instalação
 
+Funciona em **macOS, Linux e Windows** (só precisa de Node.js >= 18).
+
 ```bash
 cd C0FFE-Tools
-./install.sh        # build + comando `coff` no PATH + instala em cada IA encontrada
+./install.sh        # macOS / Linux
+.\install.cmd       # Windows (PowerShell ou cmd)
 coff doctor         # confere MCPs, CLIs e tokens
 ```
+
+O instalador instala dependências, faz o build, cria o comando `coff` e roda `coff install`.
+
+### Perfis
+
+Um perfil é um preset para um tipo de usuário. Ele escolhe as IAs, os modelos e regras extras, e fica lembrado nos próximos `coff install`.
+
+```bash
+coff profiles                    # lista os perfis
+./install.sh --profile free      # ou: .\install.cmd --profile free
+coff install --profile default   # volta ao padrão
+```
+
+| Perfil | Para quem |
+|---|---|
+| `default` | Todas as IAs encontradas, modelos do `targets.json` |
+| `free` | OpenCode no plano gratuito (OpenCode Zen), iniciante. Escolhe modelos free ainda disponíveis, pede confirmação antes de editar e rodar comandos, ensina enquanto faz e economiza limite. Guia: [`docs/guia-opencode-free.md`](docs/guia-opencode-free.md) |
+
+Perfis ficam em `resources/profiles/<nome>/`: um `profile.json` mais a mesma árvore `shared/`, `<ia>/` de overrides.
 
 ### Global do zero (opcional)
 
@@ -27,7 +49,7 @@ O `reset` copia a config atual do Claude, do Codex e do OpenCode para `~/.c0ffe-
 - **pergunta** quais skills/agents/rules/commands pessoais manter (desmarca por padrão cópias antigas de coisas do c0ffe-tools);
 - **zera**: permissões do `settings.json` (vira a base de `resources/claude/permissions.json`), hooks, `~/.codex/AGENTS.md`, `~/.codex/hooks.json`, `~/.codex/rules/` e `~/.config/opencode/AGENTS.md`.
 
-O `install.sh` detecta sozinho o que existe na máquina (`~/.claude`, `~/.codex`, `~/.config/opencode`). Para escolher: `./install.sh --claude`, `--codex` ou `--opencode`. Pode rodar de novo quando quiser (por exemplo, depois de um `git pull`).
+O instalador detecta sozinho o que existe na máquina (`~/.claude`, `~/.codex`, `~/.config/opencode`). Para escolher: `--claude`, `--codex` ou `--opencode`. Pode rodar de novo quando quiser (por exemplo, depois de um `git pull`).
 
 ## Uso
 
@@ -72,12 +94,12 @@ Duas camadas:
 | Rules do projeto | `.claude/rules/c0ffe-tools/` | bloco no `AGENTS.md` | o mesmo bloco no `AGENTS.md` |
 | Hook de contexto | `SessionStart` no `settings.json` | `SessionStart` no `hooks.json` | plugin `plugins/coff-context.js` (entra no próprio compact) |
 
-- Skills são symlinks para `resources/`: editar vale na hora. Agents, commands e os blocos do `AGENTS.md` são gerados, então rode `coff install` depois de mudá-los (ele atualiza o global e todos os projetos registrados).
+- Skills são links para `resources/` (junctions no Windows): editar vale na hora. Agents, commands e os blocos do `AGENTS.md` são gerados, então rode `coff install` depois de mudá-los (ele atualiza o global e todos os projetos registrados).
 - Os arquivos do projeto apontam para esta máquina, então o `coff init` os põe no `.git/info/exclude` (não entram no git e não mexem no `.gitignore`).
 - O Codex e o OpenCode só procuram `.agents/skills` da pasta atual até a raiz do repo git. Em projeto multi-repo, abra a IA na raiz do projeto.
-- O hook reinjeta `.harness/config.json`, o style guide, o status das features e o plano da feature ativa **depois de um compact**. Para injetar também ao abrir a sessão no Claude/Codex: `export COFF_CONTEXT_ON_START=1`.
+- O hook reinjeta `.harness/config.json`, o style guide, o status das features e o plano da feature ativa **depois de um compact**. Para injetar também ao abrir a sessão no Claude/Codex: variável de ambiente `COFF_CONTEXT_ON_START=1`.
 - Antes da primeira edição, cada arquivo editado ganha um backup `<arquivo>.c0ffe-tools.bak`. `coff uninstall` desfaz tudo.
-- **Usando OpenCode junto com o Claude:** o OpenCode também lê `.claude/skills` e veria as skills duplicadas. Ponha no `~/.zshrc`: `export OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1` (o `coff doctor` avisa).
+- **Usando OpenCode junto com o Claude:** o OpenCode também lê `.claude/skills` e veria as skills duplicadas. Ponha `OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1` no ambiente: `export ...` no `~/.zshrc`/`~/.bashrc`, ou `setx OPENCODE_DISABLE_CLAUDE_CODE_SKILLS 1` no Windows (o `coff doctor` avisa).
 
 ## Uma base, ajustes por IA
 
@@ -107,15 +129,16 @@ coff doctor                 # diagnóstico
 coff init [path] [--client <nome>] [--prd <url>] [--tracker <TEAM|url-jira>] [--figma repo=url] [-y]
 coff status [--client <nome>]
 coff add-client <nome> | remove-client <nome> | add-project <path> | remove-project
-coff setup-dns              # dnsmasq + Caddy + certs para *.coff.test (uma vez)
-coff up <feature> | down <feature> | ps   # dev servers por feature em https://<feature>.coff.test
+coff profiles               # perfis disponíveis
+coff setup-proxy            # uma vez: confere o Caddy e confia na CA local (HTTPS sem configurar DNS)
+coff up <feature> | down <feature> | ps   # dev servers por feature em https://<feature>.coff.localhost
 ```
 
 O estado (clientes, projetos, portas, dev servers, backups) fica em `~/.c0ffe-tools/`.
 
 ## Pré-requisitos
 
-- Node.js >= 18
+- Node.js >= 18 (macOS, Linux ou Windows)
 - Claude Code, Codex e/ou OpenCode
 - MCPs: Figma Desktop, Notion (PRD) e Atlassian (só se usar Jira). Linear usa `LINEAR_API_KEY`, sem MCP. Veja `resources/docs/MCP_SETUP.md` (tem seções para Codex e OpenCode).
 - `gh`, e opcionalmente `railway`, `vercel`, `caddy`. Veja `resources/docs/TOOLS_SETUP.md`.
@@ -129,8 +152,10 @@ resources/claude/    overrides do Claude + permissions.json base
 resources/codex/     overrides do Codex + compat.md
 resources/opencode/  overrides do OpenCode + compat.md
 resources/targets.json  modelos por nível e exclusões por IA
-resources/hooks/     hook SessionStart de reinjeção de contexto
+resources/hooks/     reinjeção de contexto após compact (Node; hook no Claude/Codex, plugin no OpenCode)
 resources/docs/      setup, MCPs, ferramentas, env
-install.sh           instalador de um comando
+resources/profiles/  perfis (ex.: free)
+scripts/install.mjs  instalador (chamado por install.sh / install.cmd / install.ps1)
+scripts/smoke.mjs    teste de ponta a ponta num HOME temporário (CI em macOS, Linux e Windows)
 ```
 

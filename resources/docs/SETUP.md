@@ -14,10 +14,11 @@
 
 ```bash
 cd C0FFE-Tools
-./install.sh            # build + `coff` on PATH + install into every AI found
+./install.sh            # macOS / Linux
+.\install.cmd           # Windows
 ```
 
-Auto-detects Claude Code (`~/.claude`), Codex (`~/.codex`) and OpenCode (`~/.config/opencode`). Use `./install.sh --claude`, `--codex` or `--opencode` to pick. Re-run after `git pull`.
+Builds, puts `coff` on PATH and installs into every AI found: Claude Code (`~/.claude`), Codex (`~/.codex`) and OpenCode (`~/.config/opencode`). Use `--claude`, `--codex` or `--opencode` to pick, `--profile <name>` for a preset (`coff profiles`). Re-run after `git pull`.
 
 What gets installed (global layer; `coff init` installs the pipeline into the project the same way, see the README):
 
@@ -56,7 +57,7 @@ Non-interactive: `coff init . --client "Acme" --tracker TEAM --figma web=https:/
 
 ### 4. Install external tools
 
-See `TOOLS_SETUP.md` for required tools (gh, Playwright, Caddy, dnsmasq).
+See `TOOLS_SETUP.md` for required tools (gh, Playwright, Caddy).
 
 ### 5. Configure MCP servers
 

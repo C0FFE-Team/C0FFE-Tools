@@ -1,18 +1,33 @@
 # Tools Setup
 
-External tools required by the C0FFE Tools harness. Install these globally on your machine.
+External tools used by the C0FFE Tools harness. Commands are given for macOS (Homebrew), Windows (winget) and Linux (apt; use your distro's package manager otherwise).
+
+## Node.js & pnpm
+
+Required by everything (the CLI, the installer and the context hook all run on Node).
+
+| OS | Install |
+|---|---|
+| macOS | `brew install node@22` (or nvm / fnm) |
+| Windows | `winget install OpenJS.NodeJS.LTS` |
+| Linux | `sudo apt install nodejs npm` (or nvm / fnm for a recent version) |
+
+pnpm is optional: the installer falls back to `npx pnpm` when it is missing.
+
+Minimum versions: Node.js >= 18.
 
 ## GitHub CLI (`gh`)
 
 Used by: `coff-create-pr`, `coff-solve` (Publisher agent)
 
-```bash
-brew install gh
-gh auth login
-```
+| OS | Install |
+|---|---|
+| macOS | `brew install gh` |
+| Windows | `winget install GitHub.cli` |
+| Linux | `sudo apt install gh` |
 
-Verify:
 ```bash
+gh auth login
 gh auth status
 ```
 
@@ -23,85 +38,34 @@ Used by: `coff-visual-test`, `coff-implement` (screenshot comparison)
 ```bash
 npm install -g playwright @playwright/test
 npx playwright install chromium
-```
-
-Verify:
-```bash
 npx playwright --version
 ```
 
-Browsers are cached at `~/Library/Caches/ms-playwright/`.
+The `coff-visual-test` skill uses headless Chromium to take screenshots of running pages, compare them with Figma reference images and produce visual diff reports. No per-project Playwright config is needed.
 
-### Usage in skills
+## Caddy (dev servers)
 
-The `coff-visual-test` skill uses Playwright headless Chromium to:
-- Take screenshots of running pages
-- Compare against Figma reference images
-- Generate visual diff reports
+Used by: `coff up`, `coff down`, `coff ps` — local dev servers on `https://<feature>.coff.localhost`.
 
-No per-project Playwright config is needed — the skill runs Chromium directly via the global install.
+| OS | Install |
+|---|---|
+| macOS | `brew install caddy` |
+| Windows | `winget install CaddyServer.Caddy` |
+| Linux | `sudo apt install caddy` (see https://caddyserver.com/docs/install) |
 
-## Caddy + dnsmasq
-
-Used by: `coff up`, `coff down`, `coff ps` (local dev servers with custom domains)
-
-```bash
-coff setup-dns
-```
-
-This single command installs and configures everything:
-- **dnsmasq** — wildcard DNS (`*.coff.test` -> 127.0.0.1)
-- **Caddy** — reverse proxy with auto-TLS via mkcert
-- **mkcert** — generates trusted local wildcard certificates
-
-Verify:
-```bash
-dig test.coff.test @127.0.0.1
-```
-
-### Manual install (if `setup-dns` fails)
+Then, once:
 
 ```bash
-brew install dnsmasq caddy mkcert
-
-# dnsmasq config
-echo 'address=/.coff.test/127.0.0.1' >> /opt/homebrew/etc/dnsmasq.conf
-sudo mkdir -p /etc/resolver
-echo 'nameserver 127.0.0.1' | sudo tee /etc/resolver/coff.test
-sudo brew services restart dnsmasq
-
-# mkcert
-mkcert -install
-mkdir -p ~/.c0ffe-tools/certs
-mkcert -cert-file ~/.c0ffe-tools/certs/wildcard.pem \
-       -key-file ~/.c0ffe-tools/certs/wildcard-key.pem \
-       "*.coff.test"
+coff setup-proxy
 ```
 
-## Node.js & pnpm
-
-Required by everything.
-
-```bash
-# Node.js (via nvm, fnm, or brew)
-brew install node@22
-
-# pnpm
-npm install -g pnpm
-```
-
-Minimum versions:
-- Node.js >= 18
-- pnpm >= 8
+It runs `caddy trust` so browsers accept Caddy's local certificates (`tls internal`). No DNS setup: browsers resolve `*.localhost` to `127.0.0.1` on every OS.
 
 ## Summary
 
-| Tool | Install | Used by |
-|------|---------|---------|
-| `gh` | `brew install gh` | PRs, issues |
-| `playwright` | `npm install -g playwright @playwright/test` | Visual testing |
-| `caddy` | `coff setup-dns` | Dev server proxy |
-| `dnsmasq` | `coff setup-dns` | Local wildcard DNS |
-| `mkcert` | `coff setup-dns` | Local TLS certs |
-| `node` | `brew install node` | Everything |
-| `pnpm` | `npm install -g pnpm` | Everything |
+| Tool | Used by |
+|------|---------|
+| `node` | Everything |
+| `gh` | PRs, issues |
+| `playwright` | Visual testing |
+| `caddy` | Dev server proxy (`coff up`) |

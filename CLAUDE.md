@@ -8,7 +8,8 @@ C0FFE Tools: AI development harness for Claude Code, Codex and OpenCode. CLI bin
 - `src/utils/resources.ts` — resolves what each AI gets: `shared/` + per-AI override + `targets.json` excludes
 - `src/utils/agents.ts` — neutral agent format → Claude `.md`, Codex `.toml`, OpenCode `.md`; OpenCode `/coff-*` commands
 - `src/utils/layers.ts` — where each AI keeps each layer (global / project); install, uninstall and doctor checks share one plan
-- `src/utils/opencode.ts` — OpenCode compaction plugin (reuses `resources/hooks/context-reinject.sh`)
+- `src/utils/opencode.ts` — OpenCode compaction plugin (imports `resources/hooks/context-reinject.mjs`)
+- `src/utils/profile.ts` — profiles: active profile in `~/.c0ffe-tools/settings.json`, model preference lists checked against the live OpenCode Zen list, OpenCode defaults written into `opencode.json`
 - `src/utils/backup.ts` — backup/restore of the global config (`coff reset`, `coff restore`)
 
 ## Resources
@@ -17,17 +18,26 @@ C0FFE Tools: AI development harness for Claude Code, Codex and OpenCode. CLI bin
 - `resources/targets.json` — per AI: `tiers` (agent `tier: deep|fast` → model or reasoning effort) and `exclude` (names that AI must not get)
 - `resources/<codex|opencode>/compat.md` — Claude vocabulary → that AI, prepended to its global rules block
 - `resources/claude/permissions.json` — base permissions written by `coff reset`
-- `resources/hooks/context-reinject.sh` — re-injects `.harness/` context after compaction (Claude/Codex SessionStart, OpenCode plugin)
+- `resources/hooks/context-reinject.mjs` — re-injects `.harness/` context after compaction (Claude/Codex SessionStart via `node`, OpenCode plugin import)
+- `resources/profiles/<name>/` — `profile.json` (targets, tier preference lists, exclusions, OpenCode model/defaults) + the same `shared/`, `<ai>/` tree layered on top
 - Agent frontmatter is neutral: `name`, `description`, `tier`, `readonly`. Never put an AI-specific `model:` in `shared/`.
 
 ## Sharing constraints
 - OpenCode reads `.claude/skills` and `.agents/skills` too and needs unique skill names: with Codex installed it uses Codex's `.agents/skills` (an OpenCode-only skill override is then ignored, with a warning); with Claude installed users should set `OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1`.
 - Codex and OpenCode share the project `AGENTS.md` block; Codex's version wins.
 
+## Cross-platform
+- Must work on macOS, Linux and Windows. Node only: no bash, `which`, `sudo` or Homebrew in code paths (Homebrew/winget/apt only in user-facing hints).
+- Directory links are symlinks (junctions on Windows); file links fall back to marked copies where Windows refuses symlinks.
+- Spawn `.cmd` shims (pnpm, npx) with `shell: true` on Windows; stop process trees with `taskkill /T` on Windows, process groups elsewhere.
+- Dev servers use `*.coff.localhost` (resolved by browsers everywhere) + Caddy `tls internal`.
+
 ## Build
 ```bash
-./install.sh     # deps + build + `coff` on PATH + `coff install`
+./install.sh     # macOS/Linux — Windows: install.cmd / install.ps1 (all call scripts/install.mjs)
 pnpm typecheck
+pnpm build
+pnpm smoke       # end-to-end check in a temp HOME (CI runs it on macOS, Linux, Windows)
 pnpm dev         # watch mode
 ```
 
@@ -38,8 +48,8 @@ pnpm dev         # watch mode
 - `coff reset` never touches auth, history, sessions, project memory, MCP servers, plugins or prefs, and always backs up to `~/.c0ffe-tools/backups/` first.
 
 ## Commands
-- `coff install|uninstall [--claude|--codex|--opencode]`, `coff doctor`
+- `coff install [--claude|--codex|--opencode] [--profile <name>]`, `coff uninstall`, `coff doctor`, `coff profiles`
 - `coff reset [--dry-run] [-y]`, `coff restore [id]` — global config from scratch, with backup
 - `coff init [path]` — one-step project setup (`add-project` with auto client)
 - `coff status`, `coff add-client`, `coff remove-client`, `coff remove-project`
-- `coff setup-dns`, `coff up|down <feature>`, `coff ps` — per-feature dev servers on `*.coff.test`
+- `coff setup-proxy`, `coff up|down <feature>`, `coff ps` — per-feature dev servers on `*.coff.localhost`
