@@ -1,0 +1,26 @@
+{
+  "allow": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "Bash(git status*)",
+    "Bash(git diff*)",
+    "Bash(git log*)",
+    "Bash(git show*)",
+    "Bash(git branch*)",
+    "Bash(ls *)",
+    "Bash(rg *)",
+    "Bash(pnpm *)",
+    "Bash(npm run *)",
+    "Bash(npx tsc*)",
+    "Bash(bun run *)",
+    "Bash(coff *)"
+  ],
+  "deny": [
+    "Read(./.env)",
+    "Read(./.env.*)",
+    "Bash(git push --force*)",
+    "Bash(rm -rf /*)"
+  ]
+}

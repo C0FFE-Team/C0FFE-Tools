@@ -1,0 +1,15 @@
+{
+  "$comment": "Per-AI settings. tiers map an agent's `tier` (deep|fast) to a model (claude/opencode) or reasoning effort (codex). Empty = inherit the session's model. exclude lists skill/agent/rule names this AI should not get.",
+  "claude": {
+    "tiers": { "deep": "opus", "fast": "sonnet" },
+    "exclude": []
+  },
+  "codex": {
+    "tiers": { "deep": "high", "fast": "medium" },
+    "exclude": []
+  },
+  "opencode": {
+    "tiers": { "deep": "", "fast": "" },
+    "exclude": []
+  }
+}
