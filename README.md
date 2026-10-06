@@ -143,6 +143,16 @@ O estado (clientes, projetos, portas, dev servers, backups) fica em `~/.c0ffe-to
 - MCPs: Figma Desktop, Notion (PRD) e Atlassian (só se usar Jira). Linear usa `LINEAR_API_KEY`, sem MCP. Veja `resources/docs/MCP_SETUP.md` (tem seções para Codex e OpenCode).
 - `gh`, e opcionalmente `railway`, `vercel`, `caddy`. Veja `resources/docs/TOOLS_SETUP.md`.
 
+## Site
+
+A página de apresentação (instalação por IA e sistema, uso, skills) fica em `site/` (Astro, estático).
+
+```bash
+cd site && pnpm install && pnpm dev     # http://localhost:4321
+```
+
+Deploy na Vercel: importe o repositório e defina **Root Directory = `site`**. O framework (Astro) é detectado sozinho. Links como `?ia=free&so=windows` abrem a página já com a IA e o sistema escolhidos.
+
 ## Estrutura
 
 ```
@@ -155,6 +165,7 @@ resources/targets.json  modelos por nível e exclusões por IA
 resources/hooks/     reinjeção de contexto após compact (Node; hook no Claude/Codex, plugin no OpenCode)
 resources/docs/      setup, MCPs, ferramentas, env
 resources/profiles/  perfis (ex.: free)
+site/                página de apresentação (Astro, deploy na Vercel)
 scripts/install.mjs  instalador (chamado por install.sh / install.cmd / install.ps1)
 scripts/smoke.mjs    teste de ponta a ponta num HOME temporário (CI em macOS, Linux e Windows)
 ```
