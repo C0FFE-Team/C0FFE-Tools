@@ -1,9 +1,8 @@
 import { writeFileSync } from "fs";
 import { execSync } from "child_process";
-import { CADDYFILE_PATH, CERTS_DIR } from "../constants.js";
+import { CADDYFILE_PATH } from "../constants.js";
 import { loadRunning } from "./process.js";
 import { log } from "./log.js";
-import { join } from "path";
 
 function roleToHandlePath(role: string): string | null {
   switch (role) {
@@ -36,9 +35,6 @@ export function generateCaddyfile(): string {
   const state = loadRunning();
   if (state.features.length === 0) return "# No active features\n";
 
-  const certFile = join(CERTS_DIR, "wildcard.pem");
-  const keyFile = join(CERTS_DIR, "wildcard-key.pem");
-
   const blocks: string[] = [];
 
   for (const feature of state.features) {
@@ -61,7 +57,8 @@ export function generateCaddyfile(): string {
     }
 
     blocks.push(
-      `${feature.domain} {\n  tls ${certFile} ${keyFile}\n${handles.join("\n")}\n}`
+      // Caddy's local CA (trusted once by `coff setup-proxy`): no mkcert, same on every OS
+      `${feature.domain} {\n  tls internal\n${handles.join("\n")}\n}`
     );
   }
 
@@ -88,7 +85,7 @@ export function reloadCaddy(): void {
       );
       log.success("Caddy started");
     } catch {
-      log.error("Failed to start/reload Caddy. Is it installed? Run: coff setup-dns");
+      log.error("Failed to start/reload Caddy. Is it installed? Run: coff setup-proxy");
     }
   }
 }

@@ -6,7 +6,7 @@ import { addClientCommand } from "./commands/add-client.js";
 import { addProjectCommand } from "./commands/add-project.js";
 import { statusCommand } from "./commands/status.js";
 import { syncCommand } from "./commands/sync.js";
-import { setupDnsCommand } from "./commands/setup-dns.js";
+import { setupProxyCommand } from "./commands/setup-proxy.js";
 import { upCommand } from "./commands/up.js";
 import { downCommand } from "./commands/down.js";
 import { psCommand } from "./commands/ps.js";
@@ -140,11 +140,12 @@ program
   .action(syncCommand);
 
 program
-  .command("setup-dns")
+  .command("setup-proxy")
+  .alias("setup-dns")
   .description(
-    "One-time setup: install dnsmasq + Caddy, configure wildcard DNS, generate TLS certs"
+    `One-time setup for dev servers: checks Caddy and trusts its local CA (HTTPS on *.coff.localhost, no DNS needed)`
   )
-  .action(setupDnsCommand);
+  .action(setupProxyCommand);
 
 program
   .command("up")

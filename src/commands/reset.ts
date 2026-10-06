@@ -16,7 +16,7 @@ import {
   PREFIX,
 } from "../constants.js";
 import { log } from "../utils/log.js";
-import { RESOURCES_DIR, TARGETS, type Target, isManagedFile, isOurs } from "../utils/targets.js";
+import { RESOURCES_DIR, TARGETS, type Target, isManagedFile, isOurs, removePath } from "../utils/targets.js";
 import { createBackup } from "../utils/backup.js";
 import { installGlobal, resolveTargets, type TargetOptions } from "./install.js";
 
@@ -177,7 +177,7 @@ export async function resetCommand(opts: ResetOptions = {}): Promise<void> {
   log.success(`Backup em ${backup.dir}`);
 
   for (const p of picks) {
-    for (const e of p.remove) rmSync(join(p.dir, e), { recursive: true, force: true });
+    for (const e of p.remove) removePath(join(p.dir, e));
   }
   if (targets.includes("claude")) resetClaudeSettings(basePermissions);
   if (targets.includes("codex")) resetCodex();

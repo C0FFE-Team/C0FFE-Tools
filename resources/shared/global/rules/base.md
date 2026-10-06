@@ -18,6 +18,7 @@
 - Não altere arquivos ou repositórios fora do escopo pedido
 
 ## Trabalho
+- Use comandos e caminhos do sistema do usuário: PowerShell no Windows, bash/zsh no macOS e Linux. Na dúvida, prefira comandos que funcionam nos três (`git`, `node`, `npm`/`pnpm`)
 - Leia o código existente antes de mudar; siga o estilo e as convenções do arquivo
 - Diff mínimo: não reescreva arquivos inteiros nem refatore o que não foi pedido
 - Rode typecheck/testes do escopo afetado antes de dizer que terminou; se falhar, mostre a saída

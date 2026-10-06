@@ -4,6 +4,9 @@ import {
   readFileSync,
   readdirSync,
   readlinkSync,
+  rmdirSync,
+  rmSync,
+  statSync,
   symlinkSync,
   unlinkSync,
   writeFileSync,
@@ -29,7 +32,9 @@ export const RESOURCES_DIR = existsSync(resolve(__dirname, "resources"))
   ? resolve(__dirname, "resources")
   : resolve(__dirname, "..", "resources");
 
-export const HOOK_SCRIPT = join(RESOURCES_DIR, "hooks", "context-reinject.sh");
+export const HOOK_SCRIPT = join(RESOURCES_DIR, "hooks", "context-reinject.mjs");
+
+export const IS_WINDOWS = process.platform === "win32";
 
 export const TARGETS = ["claude", "codex", "opencode"] as const;
 export type Target = (typeof TARGETS)[number];
@@ -42,7 +47,8 @@ export const TARGET_LABEL: Record<Target, string> = {
 
 export function commandExists(cmd: string): boolean {
   try {
-    execSync(`command -v ${cmd}`, { stdio: "ignore", shell: "/bin/sh" });
+    if (IS_WINDOWS) execSync(`where ${cmd}`, { stdio: "ignore" });
+    else execSync(`command -v ${cmd}`, { stdio: "ignore", shell: "/bin/sh" });
     return true;
   } catch {
     return false;
@@ -62,17 +68,61 @@ export function detectTargets(): Target[] {
   return TARGETS.filter(isTargetPresent);
 }
 
-// ---------- symlinks ----------
+// ---------- links ----------
+// Directories are linked with symlinks (junctions on Windows: no admin needed).
+// Files are symlinked too; where Windows refuses (no Developer Mode) they are
+// copied with our marker, so they are still recognised and removed as ours.
+
+/** Windows paths are case-insensitive and junction targets may carry a \\?\ prefix. */
+const normalize = (p: string): string => {
+  const r = resolve(p.replace(/^\\\\\?\\/, ""));
+  return IS_WINDOWS ? r.toLowerCase() : r;
+};
+
+const linkTarget = (linkPath: string): string => resolve(dirname(linkPath), readlinkSync(linkPath));
 
 export function isOurs(linkPath: string): boolean {
   try {
     if (!lstatSync(linkPath).isSymbolicLink()) return false;
-    return resolve(dirname(linkPath), readlinkSync(linkPath)).startsWith(
-      RESOURCES_DIR
-    );
+    return normalize(linkTarget(linkPath)).startsWith(normalize(RESOURCES_DIR));
   } catch {
     return false;
   }
+}
+
+/** Remove a file, directory, symlink or junction; links are removed, never followed. */
+export function removePath(path: string): void {
+  try {
+    if (lstatSync(path).isSymbolicLink()) return removeLink(path);
+  } catch {
+    return; // missing
+  }
+  rmSync(path, { recursive: true, force: true });
+}
+
+/** Remove a symlink or junction (a directory junction needs rmdir on some Windows setups). */
+export function removeLink(linkPath: string): void {
+  try {
+    unlinkSync(linkPath);
+  } catch {
+    rmdirSync(linkPath);
+  }
+}
+
+function createLink(src: string, dest: string): void {
+  const isDir = statSync(src).isDirectory();
+  try {
+    symlinkSync(src, dest, isDir ? (IS_WINDOWS ? "junction" : "dir") : "file");
+  } catch (err) {
+    if (isDir || !IS_WINDOWS) throw err;
+    writeFileSync(dest, withMarker(src));
+  }
+}
+
+/** File content plus our marker (for copies made where symlinks are not allowed). */
+function withMarker(src: string): string {
+  const content = readFileSync(src, "utf-8");
+  return src.endsWith(".md") ? `<!-- ${MANAGED_MARKER} -->\n${content}` : content;
 }
 
 /** Symlink `src` at `dest`. Replaces broken links and stale links of ours. */
@@ -87,23 +137,26 @@ export function linkOne(src: string, dest: string): void {
   }
 
   if (stat) {
-    if (!stat.isSymbolicLink()) {
-      log.warn(`  Pulado ${name}: já existe e não é symlink (${dest})`);
+    if (stat.isFile() && isManagedFile(dest)) {
+      unlinkSync(dest); // our copy from a previous install: refresh it
+    } else if (!stat.isSymbolicLink()) {
+      log.warn(`  Pulado ${name}: já existe e não é link (${dest})`);
       return;
+    } else {
+      const target = linkTarget(dest);
+      if (normalize(target) === normalize(src)) {
+        log.dim(`  ok ${name}`);
+        return;
+      }
+      if (existsSync(target) && !isOurs(dest)) {
+        log.warn(`  Pulado ${name}: link aponta para outro lugar (${target})`);
+        return;
+      }
+      removeLink(dest);
     }
-    const target = resolve(dirname(dest), readlinkSync(dest));
-    if (target === src) {
-      log.dim(`  ok ${name}`);
-      return;
-    }
-    if (existsSync(target) && !isOurs(dest)) {
-      log.warn(`  Pulado ${name}: symlink aponta para outro lugar (${target})`);
-      return;
-    }
-    unlinkSync(dest);
   }
 
-  symlinkSync(src, dest);
+  createLink(src, dest);
   log.success(`  ${name}`);
 }
 
@@ -115,13 +168,16 @@ export function linkEntries(srcDir: string, destDir: string): void {
   }
 }
 
-/** Remove generated files (carrying our marker) in `dir` whose name is not in `keep`. */
-export function removeManaged(dir: string, keep: Set<string> = new Set()): number {
+/**
+ * Remove generated files (carrying our marker) in `dir` whose path is not in `keep`.
+ * Only coff-* names unless `anyName` (for directories that are entirely ours).
+ */
+export function removeManaged(dir: string, keep: Set<string> = new Set(), anyName = false): number {
   if (!existsSync(dir)) return 0;
   let n = 0;
   for (const f of readdirSync(dir)) {
     const full = join(dir, f);
-    if (keep.has(full) || !f.startsWith(PREFIX)) continue;
+    if (keep.has(full) || (!anyName && !f.startsWith(PREFIX))) continue;
     try {
       if (!lstatSync(full).isFile() || !isManagedFile(full)) continue;
     } catch {
@@ -146,7 +202,7 @@ export function unlinkOurs(dir: string): number {
       continue;
     }
     if (isOurs(full) || (broken && entry.startsWith(PREFIX))) {
-      unlinkSync(full);
+      removeLink(full);
       removed++;
     }
   }
@@ -218,9 +274,9 @@ function readJson(file: string): HooksFile {
   return JSON.parse(readFileSync(file, "utf-8")) as HooksFile;
 }
 
+/** Ours by script name, so a hook from an older install (.sh) or another checkout path is replaced too. */
 const isOurHook = (h: HookCommand): boolean =>
-  typeof h.command === "string" && h.command.includes("context-reinject.sh") &&
-  h.command.includes(RESOURCES_DIR);
+  typeof h.command === "string" && /context-reinject\.(sh|mjs)\b/.test(h.command);
 
 /** Strip our hook from every event; returns whether anything changed. */
 function stripOurHooks(data: HooksFile): boolean {
@@ -244,7 +300,8 @@ export function installHook(file: string, event: string): void {
   data.hooks ??= {};
   data.hooks[event] ??= [];
   data.hooks[event].push({
-    hooks: [{ type: "command", command: `bash "${HOOK_SCRIPT}"` }],
+    // forward slashes: Node accepts them on Windows, and hook shells (Git Bash) don't mangle them
+    hooks: [{ type: "command", command: `node "${HOOK_SCRIPT.replaceAll("\\", "/")}"` }],
   });
   backupOnce(file);
   ensureDir(dirname(file));

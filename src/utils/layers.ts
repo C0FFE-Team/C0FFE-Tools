@@ -30,6 +30,7 @@ import {
   isTargetPresent,
   linkOne,
   removeBlock,
+  removeLink,
   removeManaged,
   unlinkOurs,
   upsertBlock,
@@ -110,7 +111,7 @@ function rulesBlock(layer: Layer, target: Target): string {
 /** A real directory at `dir` (an older install may have left a symlink there). */
 function ensureRealDir(dir: string): void {
   try {
-    if (lstatSync(dir).isSymbolicLink()) unlinkSync(dir);
+    if (lstatSync(dir).isSymbolicLink()) removeLink(dir);
   } catch {
     // missing
   }
@@ -185,6 +186,7 @@ export function installLayer(layer: Layer, target: Target, targets: Target[], pr
     log.info(`${label}: rules`);
     ensureRealDir(d.rules.dir);
     unlinkOurs(d.rules.dir);
+    removeManaged(d.rules.dir, new Set(), true); // copies made where symlinks are not allowed
     for (const [entry, src] of resolveEntries(layer, "rules", target)) linkOne(src, join(d.rules.dir, entry));
   } else if (sharesCodexBlock(layer, target, targets)) {
     log.info(`${label}: rules → bloco do Codex no AGENTS.md`);
@@ -214,9 +216,9 @@ export function uninstallLayer(
   if (target === "codex" && layer === "global") n += unlinkOurs(CODEX_LEGACY_SKILLS_DIR);
   if (d.commands) n += removeManaged(d.commands);
   if ("dir" in d.rules) {
-    n += unlinkOurs(d.rules.dir);
+    n += unlinkOurs(d.rules.dir) + removeManaged(d.rules.dir, new Set(), true);
     try {
-      if (lstatSync(d.rules.dir).isSymbolicLink()) unlinkSync(d.rules.dir);
+      if (lstatSync(d.rules.dir).isSymbolicLink()) removeLink(d.rules.dir);
       else rmdirSync(d.rules.dir);
       n++;
     } catch {

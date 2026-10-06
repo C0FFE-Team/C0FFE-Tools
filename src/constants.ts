@@ -52,7 +52,6 @@ export const HARNESS_ASSETS_DIR = "assets";
 export const PORTS_PATH = join(STATE_DIR, "ports.json");
 export const RUNNING_PATH = join(STATE_DIR, "running.json");
 export const CADDYFILE_PATH = join(STATE_DIR, "Caddyfile");
-export const CERTS_DIR = join(STATE_DIR, "certs");
 export const LOGS_DIR = join(STATE_DIR, "logs");
 
 // Port allocation range
@@ -60,5 +59,5 @@ export const PORT_RANGE_START = 10000;
 export const PORT_RANGE_END = 59900;
 export const PORT_BLOCK_SIZE = 100;
 
-// Domain
-export const LOCAL_DOMAIN = "coff.test";
+// Domain: browsers resolve *.localhost to 127.0.0.1 on every OS, so no DNS setup is needed
+export const LOCAL_DOMAIN = "coff.localhost";

@@ -1,10 +1,11 @@
-import { spawn } from "child_process";
+import { spawn, spawnSync } from "child_process";
 import { readFileSync, writeFileSync, existsSync, openSync } from "fs";
 import { join } from "path";
 import { RUNNING_PATH, LOGS_DIR } from "../constants.js";
 import { ensureDir } from "./config.js";
 import { dirname } from "path";
 import type { RunningState, RunningFeature, ProcessEntry } from "../types.js";
+import { IS_WINDOWS } from "./targets.js";
 
 export function loadRunning(): RunningState {
   if (!existsSync(RUNNING_PATH)) return { features: [] };
@@ -82,9 +83,13 @@ export function spawnDevServer(
 
   const child = spawn(cmd, args, {
     cwd,
+    // own process group, so `down` can stop the whole tree (pnpm → node)
     detached: true,
     stdio: ["ignore", out, err],
     env: { ...process.env, ...env },
+    // pnpm is a .cmd shim on Windows
+    shell: IS_WINDOWS,
+    windowsHide: true,
   });
 
   child.unref();
@@ -100,14 +105,27 @@ export function spawnDevServer(
   };
 }
 
-export async function killProcess(pid: number): Promise<void> {
-  if (!isProcessAlive(pid)) return;
-
-  try {
-    process.kill(pid, "SIGTERM");
-  } catch {
+/** Signal the process and its children (process group on Unix, taskkill /T on Windows). */
+function signalTree(pid: number, force: boolean): void {
+  if (IS_WINDOWS) {
+    spawnSync("taskkill", ["/pid", String(pid), "/T", ...(force ? ["/F"] : [])], { stdio: "ignore" });
     return;
   }
+  const signal = force ? "SIGKILL" : "SIGTERM";
+  try {
+    process.kill(-pid, signal);
+  } catch {
+    try {
+      process.kill(pid, signal);
+    } catch {
+      // already dead
+    }
+  }
+}
+
+export async function killProcess(pid: number): Promise<void> {
+  if (!isProcessAlive(pid)) return;
+  signalTree(pid, false);
 
   // Wait up to 5s for graceful shutdown
   for (let i = 0; i < 50; i++) {
@@ -115,12 +133,7 @@ export async function killProcess(pid: number): Promise<void> {
     if (!isProcessAlive(pid)) return;
   }
 
-  // Force kill
-  try {
-    process.kill(pid, "SIGKILL");
-  } catch {
-    // already dead
-  }
+  signalTree(pid, true);
 }
 
 export async function killFeature(featureSlug: string): Promise<void> {

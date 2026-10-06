@@ -23,7 +23,9 @@ export function warnOverlaps(targets: Target[]): void {
     !process.env.OPENCODE_DISABLE_CLAUDE_CODE_SKILLS
   ) {
     log.warn(
-      "OpenCode também lê .claude/skills e veria as skills coff-* duplicadas. Adicione ao ~/.zshrc: export OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1"
+      process.platform === "win32"
+        ? "OpenCode também lê .claude/skills e veria as skills coff-* duplicadas. Rode uma vez no PowerShell: setx OPENCODE_DISABLE_CLAUDE_CODE_SKILLS 1"
+        : "OpenCode também lê .claude/skills e veria as skills coff-* duplicadas. Adicione ao ~/.zshrc ou ~/.bashrc: export OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1"
     );
   }
 }

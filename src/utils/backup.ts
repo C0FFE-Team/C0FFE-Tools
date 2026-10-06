@@ -5,14 +5,14 @@ import {
   readFileSync,
   readdirSync,
   readlinkSync,
-  rmSync,
+  statSync,
   symlinkSync,
   writeFileSync,
 } from "fs";
 import { join } from "path";
 import { AGENTS_HOME_DIR, BACKUPS_DIR, CLAUDE_DIR, CODEX_DIR, OPENCODE_DIR } from "../constants.js";
 import { ensureDir } from "./config.js";
-import type { Target } from "./targets.js";
+import { type Target, removePath } from "./targets.js";
 
 /**
  * Config that `coff reset` may change. Never includes auth, history,
@@ -86,7 +86,13 @@ function itemsFor(scope: Scope): string[] {
 /** Copy a file, dir or symlink as-is (symlinks stay symlinks). */
 function copyVerbatim(src: string, dest: string): void {
   if (lstatSync(src).isSymbolicLink()) {
-    symlinkSync(readlinkSync(src), dest);
+    let isDir = false;
+    try {
+      isDir = statSync(src).isDirectory();
+    } catch {
+      // broken link: keep it as a file link
+    }
+    symlinkSync(readlinkSync(src), dest, isDir ? (process.platform === "win32" ? "junction" : "dir") : "file");
     return;
   }
   cpSync(src, dest, { recursive: true, verbatimSymlinks: true });
@@ -137,7 +143,7 @@ export function restoreBackup(backup: BackupInfo): void {
   for (const [scope, items] of Object.entries(backup.manifest.items) as [Scope, string[]][]) {
     for (const item of items) {
       const dest = join(roots[scope], item);
-      rmSync(dest, { recursive: true, force: true });
+      removePath(dest);
       ensureDir(roots[scope]);
       copyVerbatim(join(backup.dir, scope, item), dest);
     }

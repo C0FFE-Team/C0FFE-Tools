@@ -101,7 +101,7 @@ export async function doctorCommand(): Promise<void> {
     ["gh", "coff-create-pr, coff-publisher"],
     ["railway", "coff-deploy (backend)"],
     ["vercel", "coff-deploy (frontend)"],
-    ["caddy", "coff up / setup-dns"],
+    ["caddy", "coff up / setup-proxy"],
   ] as const) {
     const ok = commandExists(cmd);
     row(ok ? "ok" : "warn", cmd, ok ? "" : `não instalado — usado por ${use}`);
