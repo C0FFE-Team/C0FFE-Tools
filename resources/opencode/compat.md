@@ -6,7 +6,7 @@ C0FFE Tools skills (`coff-*`) and agents (`coff-*`) share one text with Claude C
 |---|---|
 | "Launch the **coff-X** agent", Agent tool, `subagent_type` | Call the `task` tool with the subagent `coff-X`, passing the same inputs and files. Wait for its result before the next stage. |
 | `/coff-x`, "use the coff-x skill" | Load it with the `skill` tool (`skill({ name: "coff-x" })`) and follow its `SKILL.md`. |
-| `AskUserQuestion` / "ask the user (HITL)" | Ask in plain text with numbered options and **stop until the user answers**. |
+| `AskUserQuestion` / "ask the user (HITL)" | Use the `question` tool (or ask in plain text with numbered options) and **stop until the user answers**. |
 | `TodoWrite` / task list | Use the `todowrite` tool. |
 | `Read` / `Edit` / `Write` / `Glob` / `Grep` | OpenCode built-ins `read`, `edit`, `write`, `glob`, `grep`. |
 | `mcp__figma*__*` (Figma Desktop MCP) | Tools of the MCP server `figma` in `opencode.json` (named `figma_<tool>`), URL `http://127.0.0.1:3845/mcp`. |
