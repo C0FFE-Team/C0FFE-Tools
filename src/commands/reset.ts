@@ -19,6 +19,7 @@ import { log } from "../utils/log.js";
 import { RESOURCES_DIR, TARGETS, type Target, isManagedFile, isOurs, removePath } from "../utils/targets.js";
 import { createBackup } from "../utils/backup.js";
 import { installGlobal, resolveTargets, type TargetOptions } from "./install.js";
+import { applyOpencodeDefaults, useActiveProfile } from "../utils/profile.js";
 
 interface ResetOptions extends TargetOptions {
   yes?: boolean;
@@ -134,6 +135,7 @@ function resetCodex(): void {
 
 export async function resetCommand(opts: ResetOptions = {}): Promise<void> {
   log.header("C0FFE Tools - Reset global");
+  const profile = await useActiveProfile();
   const targets = resolveTargets(opts);
   if (targets.length === 0) {
     log.error("Nenhuma IA encontrada (Claude Code, Codex, OpenCode).");
@@ -184,6 +186,7 @@ export async function resetCommand(opts: ResetOptions = {}): Promise<void> {
   if (targets.includes("opencode")) resetOpencode();
 
   installGlobal(targets);
+  if (profile && targets.includes("opencode")) await applyOpencodeDefaults(profile);
 
   log.header("Pronto!");
   log.info(`Desfazer: coff restore ${backup.id}`);

@@ -1,0 +1,51 @@
+{
+  "description": "OpenCode no plano free (OpenCode Zen), para quem está começando",
+  "targets": ["opencode"],
+  "tiers": {
+    "opencode": {
+      "deep": [
+        "opencode/big-pickle",
+        "opencode/deepseek-v4-flash-free",
+        "opencode/nemotron-3-ultra-free",
+        "opencode/mimo-v2.5-free"
+      ],
+      "fast": [
+        "opencode/mimo-v2.6-flash-free",
+        "opencode/nemotron-3.5-lightning-free",
+        "opencode/ling-3.1-flash-free",
+        "opencode/deepseek-v4-flash-free"
+      ]
+    }
+  },
+  "opencode": {
+    "model": [
+      "opencode/big-pickle",
+      "opencode/deepseek-v4-flash-free",
+      "opencode/nemotron-3-ultra-free",
+      "opencode/mimo-v2.5-free"
+    ],
+    "small_model": [
+      "opencode/mimo-v2.6-flash-free",
+      "opencode/nemotron-3.5-lightning-free",
+      "opencode/ling-3.1-flash-free"
+    ],
+    "defaults": {
+      "permission": {
+        "edit": "ask",
+        "webfetch": "allow",
+        "bash": {
+          "*": "ask",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "ls*": "allow",
+          "dir*": "allow",
+          "pwd": "allow",
+          "node -v": "allow",
+          "npm -v": "allow",
+          "pnpm -v": "allow"
+        }
+      }
+    }
+  }
+}

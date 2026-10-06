@@ -5,13 +5,15 @@ import { log } from "../utils/log.js";
 import { TARGETS, TARGET_LABEL, type Target, detectTargets, installHook } from "../utils/targets.js";
 import { installLayer, installProject } from "../utils/layers.js";
 import { OPENCODE_PLUGIN_PATH, installOpencodePlugin } from "../utils/opencode.js";
+import { applyOpencodeDefaults, currentProfile, selectProfile, useActiveProfile } from "../utils/profile.js";
 
 export type TargetOptions = Partial<Record<Target, boolean>>;
 
-/** Explicit flags win; otherwise every AI CLI found on this machine. */
+/** Explicit flags win, then the active profile's AIs, then every AI CLI found on this machine. */
 export function resolveTargets(opts: TargetOptions): Target[] {
   const picked = TARGETS.filter((t) => opts[t]);
-  return picked.length ? picked : detectTargets();
+  if (picked.length) return picked;
+  return currentProfile()?.targets ?? detectTargets();
 }
 
 /** Warn about setups where one AI would see another's files twice. */
@@ -72,11 +74,14 @@ export function refreshProjects(targets: Target[]): void {
   }
 }
 
-export async function installCommand(opts: TargetOptions = {}): Promise<void> {
+export async function installCommand(opts: TargetOptions & { profile?: string } = {}): Promise<void> {
   log.header("C0FFE Tools - Install");
 
   ensureDir(STATE_DIR);
   log.success(`Estado em ${STATE_DIR}`);
+  if (opts.profile) selectProfile(opts.profile);
+  const profile = await useActiveProfile();
+  log.info(`Perfil: ${profile ? `${profile.name} — ${profile.description}` : "default"}`);
 
   const targets = resolveTargets(opts);
   if (targets.length === 0) {
@@ -86,6 +91,10 @@ export async function installCommand(opts: TargetOptions = {}): Promise<void> {
   log.info(`IAs: ${targets.map((t) => TARGET_LABEL[t]).join(", ")}`);
 
   installGlobal(targets);
+  if (profile && targets.includes("opencode")) {
+    log.header(`OpenCode (perfil ${profile.name})`);
+    await applyOpencodeDefaults(profile);
+  }
   refreshProjects(targets);
 
   log.header("Pronto!");

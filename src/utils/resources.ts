@@ -7,6 +7,7 @@ import { RESOURCES_DIR, type Target } from "./targets.js";
  *   shared/<layer>/<kind>/   text every AI gets
  *   <ai>/<layer>/<kind>/     same name = replaces the shared one for that AI; new name = extra
  *   targets.json             per-AI model tiers and excluded names
+ *   profiles/<name>/         optional profile: same tree again (shared/, <ai>/) on top, plus profile.json
  */
 export type Layer = "global" | "project";
 export type Kind = "skills" | "agents" | "rules";
@@ -18,10 +19,20 @@ export interface TargetConfig {
 
 let cache: Record<Target, TargetConfig> | undefined;
 
+/** Set by the active profile (see profile.ts): its directory and its already-resolved settings. */
+let profile: { dir: string; tiers: Partial<Record<Target, Record<string, string>>>; exclude: Partial<Record<Target, string[]>> } | undefined;
+
+export function useProfileResources(p: typeof profile): void {
+  profile = p;
+}
+
 export function targetConfig(target: Target): TargetConfig {
   cache ??= JSON.parse(readFileSync(join(RESOURCES_DIR, "targets.json"), "utf-8"));
   const cfg = cache![target];
-  return { tiers: cfg?.tiers ?? {}, exclude: cfg?.exclude ?? [] };
+  return {
+    tiers: { ...(cfg?.tiers ?? {}), ...(profile?.tiers[target] ?? {}) },
+    exclude: [...(cfg?.exclude ?? []), ...(profile?.exclude[target] ?? [])],
+  };
 }
 
 const stripExt = (entry: string): string => entry.replace(/\.md$/, "");
@@ -29,7 +40,9 @@ const stripExt = (entry: string): string => entry.replace(/\.md$/, "");
 /** entry name (dir or file.md) → source path, for one AI. */
 export function resolveEntries(layer: Layer, kind: Kind, target: Target): Map<string, string> {
   const out = new Map<string, string>();
-  for (const base of [join(RESOURCES_DIR, "shared", layer, kind), join(RESOURCES_DIR, target, layer, kind)]) {
+  const roots = [RESOURCES_DIR, ...(profile ? [profile.dir] : [])];
+  const bases = roots.flatMap((root) => [join(root, "shared", layer, kind), join(root, target, layer, kind)]);
+  for (const base of bases) {
     if (!existsSync(base)) continue;
     for (const entry of readdirSync(base)) {
       if (!entry.startsWith(".")) out.set(entry, join(base, entry));

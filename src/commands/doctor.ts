@@ -13,7 +13,8 @@ import { log } from "../utils/log.js";
 import { TARGETS, TARGET_LABEL, type Target, commandExists, detectTargets, hasHook } from "../utils/targets.js";
 import { type Layer, checkLayer } from "../utils/layers.js";
 import { hasOpencodePlugin } from "../utils/opencode.js";
-import { warnOverlaps } from "./install.js";
+import { resolveTargets, warnOverlaps } from "./install.js";
+import { activeProfileName, unavailableOpencodeModels, useActiveProfile } from "../utils/profile.js";
 
 type Level = "ok" | "warn" | "fail";
 
@@ -75,7 +76,9 @@ export async function doctorCommand(): Promise<void> {
   const major = Number(process.versions.node.split(".")[0]);
   row(major >= 18 ? "ok" : "fail", `Node ${process.versions.node}`, major >= 18 ? "" : "precisa >= 18");
 
-  const targets = detectTargets();
+  const profile = await useActiveProfile();
+  row("ok", `Perfil: ${activeProfileName()}`, profile?.description ?? "");
+  const targets = resolveTargets({}).filter((t) => detectTargets().includes(t));
   for (const t of TARGETS) {
     console.log(chalk.bold(`\n${TARGET_LABEL[t]} (global)`));
     if (!targets.includes(t)) {
@@ -85,6 +88,12 @@ export async function doctorCommand(): Promise<void> {
     layerRows("global", t, targets);
     const hook = hookInstalled(t);
     row(hook ? "ok" : "fail", t === "opencode" ? "plugin de contexto" : "hook de contexto", hook ? "" : `rode coff install --${t}`);
+    if (t === "opencode") {
+      const gone = await unavailableOpencodeModels();
+      if (gone === undefined) row("warn", "modelos do OpenCode Zen", "sem internet para conferir");
+      else if (gone.length) row("fail", `modelo indisponível: ${gone.join(", ")}`, "troque com /models no OpenCode, ou apague model/small_model do opencode.json e rode coff install");
+      else row("ok", "modelos do opencode.json disponíveis");
+    }
     for (const [name, use] of MCPS) {
       const ok = mcpConfigured(t, name);
       if (ok === undefined) continue;

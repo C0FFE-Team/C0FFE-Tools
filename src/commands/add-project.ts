@@ -12,7 +12,9 @@ import {
 } from "../utils/config.js";
 import { HARNESS_DIR, HARNESS_MEMORY_DIR, HARNESS_PLANS_DIR, HARNESS_ASSETS_DIR } from "../constants.js";
 import { log } from "../utils/log.js";
-import { detectTargets } from "../utils/targets.js";
+import { resolveTargets } from "./install.js";
+import { TARGET_LABEL } from "../utils/targets.js";
+import { useActiveProfile } from "../utils/profile.js";
 import { installProject } from "../utils/layers.js";
 import type { HarnessConfig, Registry, RepoConfig } from "../types.js";
 
@@ -30,6 +32,7 @@ export async function addProjectCommand(
 ): Promise<void> {
   const projectPath = resolve(pathArg);
   const projectName = basename(projectPath);
+  await useActiveProfile();
 
   if (!existsSync(projectPath)) {
     log.error(`Directory does not exist: ${projectPath}`);
@@ -43,7 +46,7 @@ export async function addProjectCommand(
   );
   if (already) {
     log.warn(`Projeto já registrado em ${projectPath} (cliente "${already.name}"). Atualizando o pipeline.`);
-    installProject(projectPath, detectTargets());
+    installProject(projectPath, resolveTargets({}));
     return;
   }
 
@@ -178,13 +181,14 @@ export async function addProjectCommand(
     `# Key Decisions\n\n`
   );
 
-  // Create .claude/ structure
-  const claudeDir = join(projectPath, ".claude");
-  ensureDir(join(claudeDir, "rules"));
+  const targets = resolveTargets({});
+  const forClaude = targets.includes("claude");
 
-  // settings.local.json with common permissions
+  // Claude Code project settings with common permissions
+  const claudeDir = join(projectPath, ".claude");
   const settingsPath = join(claudeDir, "settings.local.json");
-  if (!existsSync(settingsPath)) {
+  if (forClaude && !existsSync(settingsPath)) {
+    ensureDir(claudeDir);
     writeFileSync(
       settingsPath,
       JSON.stringify(
@@ -211,14 +215,14 @@ export async function addProjectCommand(
 
   // Generate project CLAUDE.md
   const claudeMdPath = join(projectPath, "CLAUDE.md");
-  if (!existsSync(claudeMdPath)) {
+  if (forClaude && !existsSync(claudeMdPath)) {
     writeFileSync(
       claudeMdPath,
       generateClaudeMd(client.name, projectName, config)
     );
   }
 
-  // Same context for Codex, which reads AGENTS.md instead of CLAUDE.md
+  // Same context for Codex and OpenCode, which read AGENTS.md instead of CLAUDE.md
   const agentsMdPath = join(projectPath, "AGENTS.md");
   if (!existsSync(agentsMdPath)) {
     writeFileSync(
@@ -229,7 +233,7 @@ export async function addProjectCommand(
 
   // Pipeline skills/agents/rules live in the project, not in ~/.claude / ~/.codex
   log.info("\nPipeline coff-* no projeto:");
-  installProject(projectPath, detectTargets());
+  installProject(projectPath, targets);
 
   // Register in registry
   client.projects.push({ name: projectName, path: projectPath });
@@ -237,9 +241,8 @@ export async function addProjectCommand(
 
   log.success(`Project "${projectName}" added to client "${client.name}".`);
   log.info(`  .harness/ created at ${harnessDir}`);
-  log.info(`  .claude/ created at ${claudeDir}`);
-  log.info("  CLAUDE.md + AGENTS.md (Codex/OpenCode) gerados se ainda não existiam.");
-  log.info("  Pipeline coff-* em .claude/ (Claude), .agents/ + .codex/ (Codex) e .opencode/ (OpenCode).");
+  log.info(`  ${forClaude ? "CLAUDE.md e AGENTS.md gerados" : "AGENTS.md gerado"} (se ainda não existiam).`);
+  log.info(`  Pipeline coff-* instalado para: ${targets.map((t) => TARGET_LABEL[t]).join(", ")}.`);
   log.info("  Abra a IA na pasta do projeto: /coff-styleguide (Claude, OpenCode) ou $coff-styleguide (Codex).");
 }
 

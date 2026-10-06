@@ -6,9 +6,11 @@ import { TARGET_LABEL, removeHook } from "../utils/targets.js";
 import { uninstallLayer, uninstallProject } from "../utils/layers.js";
 import { removeOpencodePlugin } from "../utils/opencode.js";
 import { resolveTargets, type TargetOptions } from "./install.js";
+import { useActiveProfile } from "../utils/profile.js";
 
 export async function uninstallCommand(opts: TargetOptions = {}): Promise<void> {
   log.header("C0FFE Tools - Uninstall");
+  await useActiveProfile();
   const targets = resolveTargets(opts);
 
   for (const t of targets) {

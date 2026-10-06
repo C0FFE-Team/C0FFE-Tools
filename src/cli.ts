@@ -13,6 +13,7 @@ import { psCommand } from "./commands/ps.js";
 import { removeClientCommand } from "./commands/remove-client.js";
 import { removeProjectCommand } from "./commands/remove-project.js";
 import { resetCommand } from "./commands/reset.js";
+import { profilesCommand } from "./commands/profiles.js";
 import { restoreCommand } from "./commands/restore.js";
 
 const program = new Command();
@@ -30,7 +31,13 @@ program
   .option("--claude", "Only Claude Code")
   .option("--codex", "Only Codex")
   .option("--opencode", "Only OpenCode")
+  .option("--profile <name>", "Use a profile (e.g. free) and remember it; `default` goes back to the standard setup")
   .action(installCommand);
+
+program
+  .command("profiles")
+  .description("List profiles (presets for a kind of user, e.g. free = OpenCode free plan, beginner)")
+  .action(profilesCommand);
 
 program
   .command("uninstall")
@@ -174,6 +181,7 @@ program.action(() => {
     coff install          camada global: rules gerais, skills utilitárias, agents genéricos, hook
     coff reset            (opcional) backup da config global atual + recomeça do zero
     coff doctor           confere MCPs, CLIs e tokens
+    coff profiles         perfis (ex.: free = OpenCode no plano gratuito, iniciante)
 
   Em cada projeto:
     cd <projeto> && coff init     instala o pipeline coff-* no projeto

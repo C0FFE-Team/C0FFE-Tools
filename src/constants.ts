@@ -4,6 +4,7 @@ import { join } from "path";
 export const STATE_DIR = join(homedir(), ".c0ffe-tools");
 export const REGISTRY_PATH = join(STATE_DIR, "registry.json");
 export const BACKUPS_DIR = join(STATE_DIR, "backups");
+export const SETTINGS_PATH = join(STATE_DIR, "settings.json");
 export const CLAUDE_DIR = join(homedir(), ".claude");
 export const CLAUDE_SKILLS_DIR = join(CLAUDE_DIR, "skills");
 export const CLAUDE_AGENTS_DIR = join(CLAUDE_DIR, "agents");
@@ -28,6 +29,9 @@ export const OPENCODE_AGENTS_DIR = join(OPENCODE_DIR, "agents");
 export const OPENCODE_COMMANDS_DIR = join(OPENCODE_DIR, "commands");
 export const OPENCODE_PLUGINS_DIR = join(OPENCODE_DIR, "plugins");
 export const OPENCODE_AGENTS_MD = join(OPENCODE_DIR, "AGENTS.md");
+export const OPENCODE_CONFIG_PATH = join(OPENCODE_DIR, "opencode.json");
+// Live list of OpenCode Zen models (free ones rotate often)
+export const OPENCODE_ZEN_MODELS_URL = "https://opencode.ai/zen/v1/models";
 
 // Name of the folder/block c0ffe-tools owns inside the agent config dirs
 export const MANAGED_NAME = "c0ffe-tools";
